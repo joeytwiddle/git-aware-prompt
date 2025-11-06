@@ -38,7 +38,7 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 
 ![Git Branch in Prompt](https://github.com/joeytwiddle/git-aware-prompt/raw/master/preview.png)
 
-> `≡` is a reminder that I have something on the stash.
+> `v5` indicates that the current branch is 5 commits behind the remote main branch.
 >
 > `<3` indicates that the local branch is 3 commits behind the upstream (remote) branch, and could/should be pulled.
 >
@@ -49,6 +49,8 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 > `>1` indicates that the local branch has 1 commit which has not yet been pushed to the upstream.
 >
 > `*1` indicates that the branch is dirty, with 1 file modified but not committed.
+>
+> `≡` is a reminder that we have something on the stash.
 >
 > `#` would indicate that `git status` has taken too long, so the markers are not shown.
 >
