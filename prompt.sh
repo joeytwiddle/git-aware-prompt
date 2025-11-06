@@ -190,8 +190,8 @@ find_git_ahead_behind() {
       #git_ahead_count=$(git rev-list --left-right ${local_branch}...${upstream_branch} 2> /dev/null | grep -c '^<')
       #git_behind_count=$(git rev-list --left-right ${local_branch}...${upstream_branch} 2> /dev/null | grep -c '^>')
       # If the upstream does not exist, these will return ""
-      git_ahead_count=$(git rev-list --count ${upstream_branch}..${local_branch} 2> /dev/null)
-      git_behind_count=$(git rev-list --count ${local_branch}..${upstream_branch} 2> /dev/null)
+      git_ahead_count=$(git rev-list --count "${upstream_branch}..${local_branch}" 2> /dev/null)
+      git_behind_count=$(git rev-list --count "${local_branch}..${upstream_branch}" 2> /dev/null)
       if [[ "$git_ahead_count" -gt 0 ]]; then
         git_ahead_mark='>'
       else
@@ -203,6 +203,34 @@ find_git_ahead_behind() {
         git_behind_count=''
       fi
     fi
+  fi
+}
+
+find_git_behind_main() {
+  git_behind_main_count=''
+  git_behind_main_mark=''
+  if [[ -z "$git_branch" ]]; then
+    return
+  fi
+  local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+  if [[ "$local_branch" == "main" || "$local_branch" == "master" ]]; then
+    return
+  fi
+  local primary_remote=$(git remote | head -n 1)
+  local remote_trunk_branch
+  if git rev-parse --verify --quiet "${primary_remote}/main" > /dev/null; then
+    remote_trunk_branch="${primary_remote}/main"
+  elif git rev-parse --verify --quiet "${primary_remote}/master" > /dev/null; then
+    remote_trunk_branch="${primary_remote}/master"
+  else
+    # Could not find main branch
+    return
+  fi
+  git_behind_main_count=$(git rev-list --count "${local_branch}..${remote_trunk_branch}" 2> /dev/null)
+  if [[ "$git_behind_main_count" -gt 0 ]]; then
+    git_behind_main_mark='v'
+  else
+    git_behind_main_count=''
   fi
 }
 
@@ -227,7 +255,7 @@ find_git_stash_status() {
   fi
 }
 
-PROMPT_COMMAND="find_git_branch; find_git_dirty; find_git_ahead_behind; find_git_stash_status; ${PROMPT_COMMAND:-}"
+PROMPT_COMMAND="find_git_branch; find_git_dirty; find_git_ahead_behind; find_git_behind_main; find_git_stash_status; ${PROMPT_COMMAND:-}"
 
 # The above works for bash.  For zsh we need this:
 if [[ -n "$ZSH_NAME" ]]; then
@@ -237,6 +265,7 @@ if [[ -n "$ZSH_NAME" ]]; then
   add-zsh-hook precmd find_git_branch
   add-zsh-hook precmd find_git_dirty
   add-zsh-hook precmd find_git_ahead_behind
+  add-zsh-hook precmd find_git_behind_main
   add-zsh-hook precmd find_git_stash_status
 fi
 
@@ -244,7 +273,7 @@ fi
 # export PS1="\u@\h \w\[$txtcyn\]\$git_branch\[$txtred\]\$git_ahead_mark\$git_behind_mark\$git_dirty\[$txtrst\]\$ "
 
 # Another variant, which displays counts after each mark, the number of untracked files, the number of staged files, and the stash status:
-# export PS1="\[$bldgrn\]\u@\h\[$txtrst\] \w\[$txtcyn\]\$git_branch\[$bldgrn\]\$git_ahead_mark\$git_ahead_count\[$txtrst\]\[$bldred\]\$git_behind_mark\$git_behind_count\[$txtrst\]\[$bldyellow\]\$git_stash_mark\[$txtrst\]\[$txtylw\]\$git_dirty\$git_dirty_count\$git_unknown_mark\$git_unknown_count\[$txtcyn\]\$git_staged_mark\$git_staged_count\[$txtrst\]\$ "
+# export PS1="\[$bldgrn\]\u@\h\[$txtrst\] \w\[$txtcyn\]\$git_branch\[$bldred\]\$git_behind_main_mark\$git_behind_main_count\[$txtrst\]\[$bldgrn\]\$git_ahead_mark\$git_ahead_count\[$txtrst\]\[$bldred\]\$git_behind_mark\$git_behind_count\[$txtrst\]\[$bldyellow\]\$git_stash_mark\[$txtrst\]\[$txtylw\]\$git_dirty\$git_dirty_count\$git_unknown_mark\$git_unknown_count\[$txtcyn\]\$git_staged_mark\$git_staged_count\[$txtrst\]\$ "
 
 # Default Git enabled root prompt (for use with "sudo -s")
 # export SUDO_PS1="\[$bakred\]\u@\h\[$txtrst\] \w\$ "
