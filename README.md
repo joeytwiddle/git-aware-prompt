@@ -62,7 +62,7 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 >
 >  In that situation, `git status` will continue running in the background, so after a few moments, hitting `<Enter>` again should give you an up-to-date summary.
 
-We also have some indicators for the current branch:
+We also have some indicators for the status of the current branch:
 
 > `[branch_name]` means you are on a branch with an upstream
 >
@@ -70,7 +70,7 @@ We also have some indicators for the current branch:
 >
 > `{branch_name\mode}` means you are in the middle of a merge, rebase, cherry-pick, revert or bisect
 >
-> `<commit_id>` means you are detached on the given commit, tag, or remote branch
+> `<commit_id>` means you are not on a branch, but rather detached on the given commit, tag, or remote branch
 
 The symbols (or "markers") can be changed by editing the `prompt.sh` file directly (and reloading it of course).  The numbers or the markers can be omitted by removing the `_count` or `_mark` variables from the `PS1` prompt below.
 
