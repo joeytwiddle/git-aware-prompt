@@ -40,9 +40,11 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 
 > `v5` indicates that the current branch is 5 commits behind the remote main branch.
 >
-> `>4` indicates that the local branch has 3 commits which have not yet been pushed to the upstream (excluding the following rebases).
+> `^4` indicates that the local branch has 4 commits to push, which have come from the remote main branch.
 >
-> `(+3)` indicates that 3 of the commits on the local branch are actually rebases (repicks) of commits on the upstream branch.
+> `~3` indicates that 3 of the commits on the local branch are actually rebases (repicks) of commits on the upstream branch.
+>
+> `>4` indicates that the local branch has 3 commits which have not yet been pushed to the upstream (excluding the following rebases).
 >
 > `<3` indicates that the local branch is 3 commits behind the upstream (remote) branch, and could/should be pulled (excludes rebases).
 >
