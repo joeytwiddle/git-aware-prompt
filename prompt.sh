@@ -175,6 +175,8 @@ find_git_ahead_behind() {
   git_ahead_mark=''
   git_behind_count=''
   git_behind_mark=''
+  # How many of the commits on our local branch are rebased commits from the upstream branch?
+  git_rebased_count=''
   if [[ -z "$git_branch" ]]; then
     return
   fi
@@ -192,6 +194,7 @@ find_git_ahead_behind() {
       # If the upstream does not exist, these will return ""
       git_ahead_count=$(git rev-list --count "${upstream_branch}..${local_branch}" 2> /dev/null)
       git_behind_count=$(git rev-list --count "${local_branch}..${upstream_branch}" 2> /dev/null)
+      git_rebased_count=$(git rev-list --cherry "HEAD...${upstream_branch}" 2> /dev/null | grep -c '^=')
       if [[ "$git_ahead_count" -gt 0 ]]; then
         git_ahead_mark='>'
       else
@@ -201,6 +204,11 @@ find_git_ahead_behind() {
         git_behind_mark='<'
       else
         git_behind_count=''
+      fi
+      if [[ "$git_rebased_count" -gt 0 ]]; then
+        git_rebased_count="($git_rebased_count)"
+      else
+        git_rebased_count=''
       fi
     fi
   fi
@@ -272,7 +280,7 @@ fi
 # export PS1="\u@\h \w\[$txtcyn\]\$git_branch\[$txtred\]\$git_ahead_mark\$git_behind_mark\$git_dirty\[$txtrst\]\$ "
 
 # Another variant, which displays counts after each mark, the number of untracked files, the number of staged files, and the stash status:
-# export PS1="\[$bldgrn\]\u@\h\[$txtrst\] \w\[$txtcyn\]\$git_branch\[$bldred\]\$git_behind_main_mark\$git_behind_main_count\[$txtrst\]\[$bldgrn\]\$git_ahead_mark\$git_ahead_count\[$txtrst\]\[$bldred\]\$git_behind_mark\$git_behind_count\[$txtrst\]\[$bldyellow\]\$git_stash_mark\[$txtrst\]\[$txtylw\]\$git_dirty\$git_dirty_count\$git_unknown_mark\$git_unknown_count\[$txtcyn\]\$git_staged_mark\$git_staged_count\[$txtrst\]\$ "
+# export PS1="\[$bldgrn\]\u@\h\[$txtrst\] \w\[$txtcyn\]\$git_branch\[$bldred\]\$git_behind_main_mark\$git_behind_main_count\[$txtrst\]\[$bldgrn\]\$git_ahead_mark\$git_ahead_count\[$txtrst\]\[$bldred\]\$git_behind_mark\$git_behind_count\[$txtrst\]\[$bldgrn\]\$git_rebased_count\[$txtrst\]\[$bldyellow\]\$git_stash_mark\[$txtrst\]\[$txtylw\]\$git_dirty\$git_dirty_count\$git_unknown_mark\$git_unknown_count\[$txtcyn\]\$git_staged_mark\$git_staged_count\[$txtrst\]\$ "
 
 # Default Git enabled root prompt (for use with "sudo -s")
 # export SUDO_PS1="\[$bakred\]\u@\h\[$txtrst\] \w\$ "

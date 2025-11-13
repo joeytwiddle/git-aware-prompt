@@ -42,6 +42,8 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 >
 > `<3` indicates that the local branch is 3 commits behind the upstream (remote) branch, and could/should be pulled.
 >
+> `(3)` indicates that 3 of the commits on the upstream branch are actually on the local branch, but have been rebased.
+>
 > `?1` indicates that there is 1 untracked file in the tree.
 >
 > `+1` indicates that one file is staged for comitting.
