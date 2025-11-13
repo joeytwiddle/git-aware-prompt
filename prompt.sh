@@ -171,6 +171,34 @@ find_git_dirty() {
 }
 
 find_git_ahead_behind() {
+  git_behind_main_count=''
+  git_behind_main_mark=''
+  if [[ -z "$git_branch" ]]; then
+    return
+  fi
+  local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+  local primary_remote=$(git remote | head -n 1)
+  local remote_trunk_branch
+  if git rev-parse --verify --quiet "${primary_remote}/main" > /dev/null; then
+    remote_trunk_branch="${primary_remote}/main"
+  elif git rev-parse --verify --quiet "${primary_remote}/master" > /dev/null; then
+    remote_trunk_branch="${primary_remote}/master"
+  else
+    # Could not find main branch
+    :
+  fi
+  if [[ "$local_branch" == "main" || "$local_branch" == "master" ]]; then
+    # No need to generate behind main vars
+    :
+  elif [[ -n "$remote_trunk_branch" ]]; then
+    git_behind_main_count=$(git rev-list --count "${local_branch}..${remote_trunk_branch}" 2> /dev/null)
+    if [[ "$git_behind_main_count" -gt 0 ]]; then
+      git_behind_main_mark='v'
+    else
+      git_behind_main_count=''
+    fi
+  fi
+
   git_ahead_count=''
   git_ahead_mark=''
   git_behind_count=''
@@ -217,34 +245,6 @@ find_git_ahead_behind() {
   fi
 }
 
-find_git_behind_main() {
-  git_behind_main_count=''
-  git_behind_main_mark=''
-  if [[ -z "$git_branch" ]]; then
-    return
-  fi
-  local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
-  if [[ "$local_branch" == "main" || "$local_branch" == "master" ]]; then
-    return
-  fi
-  local primary_remote=$(git remote | head -n 1)
-  local remote_trunk_branch
-  if git rev-parse --verify --quiet "${primary_remote}/main" > /dev/null; then
-    remote_trunk_branch="${primary_remote}/main"
-  elif git rev-parse --verify --quiet "${primary_remote}/master" > /dev/null; then
-    remote_trunk_branch="${primary_remote}/master"
-  else
-    # Could not find main branch
-    return
-  fi
-  git_behind_main_count=$(git rev-list --count "${local_branch}..${remote_trunk_branch}" 2> /dev/null)
-  if [[ "$git_behind_main_count" -gt 0 ]]; then
-    git_behind_main_mark='v'
-  else
-    git_behind_main_count=''
-  fi
-}
-
 find_git_stash_status() {
   git_stash_mark=''
   if [[ -z "$git_branch" ]]; then
@@ -265,7 +265,7 @@ find_git_stash_status() {
   fi
 }
 
-PROMPT_COMMAND="find_git_branch; find_git_dirty; find_git_ahead_behind; find_git_behind_main; find_git_stash_status; ${PROMPT_COMMAND:-}"
+PROMPT_COMMAND="find_git_branch; find_git_dirty; find_git_ahead_behind; find_git_stash_status; ${PROMPT_COMMAND:-}"
 
 # The above works for bash.  For zsh we need this:
 if [[ -n "$ZSH_NAME" ]]; then
@@ -275,7 +275,6 @@ if [[ -n "$ZSH_NAME" ]]; then
   add-zsh-hook precmd find_git_branch
   add-zsh-hook precmd find_git_dirty
   add-zsh-hook precmd find_git_ahead_behind
-  add-zsh-hook precmd find_git_behind_main
   add-zsh-hook precmd find_git_stash_status
 fi
 
