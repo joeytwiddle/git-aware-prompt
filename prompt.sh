@@ -173,9 +173,21 @@ find_git_dirty() {
 find_git_ahead_behind() {
   git_behind_main_count=''
   git_behind_main_mark=''
+  git_ahead_count=''
+  git_ahead_mark=''
+  git_behind_count=''
+  git_behind_mark=''
+  # How many of the commits on our local branch are rebased commits from the upstream branch?
+  # NOTE_GETS_MARKER_ADDED_TO_IT
+  git_rebased_count=''
+  # How many of the commits needed to be pushed to upstream are from the main branch?
+  # NOTE_GETS_MARKER_ADDED_TO_IT
+  git_ahead_from_main_count=''
+
   if [[ -z "$git_branch" ]]; then
     return
   fi
+
   local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
   local primary_remote=$(git remote | head -n 1)
   local remote_trunk_branch
@@ -199,16 +211,6 @@ find_git_ahead_behind() {
     fi
   fi
 
-  git_ahead_count=''
-  git_ahead_mark=''
-  git_behind_count=''
-  git_behind_mark=''
-  # How many of the commits on our local branch are rebased commits from the upstream branch?
-  # NOTE_GETS_MARKER_ADDED_TO_IT
-  git_rebased_count=''
-  # How many of the commits needed to be pushed to upstream are from the main branch?
-  # NOTE_GETS_MARKER_ADDED_TO_IT
-  git_ahead_from_main_count=''
   if [[ -z "$git_branch" ]]; then
     return
   fi
