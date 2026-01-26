@@ -224,6 +224,8 @@ find_git_ahead_behind() {
     [[ "$upstream_branch" = "@{upstream}" ]] && upstream_branch=''
     # If the branch is not tracking a specific remote branch, then assume we are tracking origin/[this_branch_name]
     [[ -z "$upstream_branch" ]] && upstream_branch="origin/$local_branch"
+    # If there is no upstream, then compare against trunk instead
+    [[ -z "$upstream_branch" ]] && upstream_branch="$remote_trunk_branch"
     if [[ -n "$upstream_branch" ]]; then
       # These always return a number
       #git_ahead_count=$(git rev-list --left-right ${local_branch}...${upstream_branch} 2> /dev/null | grep -c '^<')
