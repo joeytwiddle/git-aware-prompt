@@ -191,7 +191,10 @@ find_git_ahead_behind() {
   local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
   local primary_remote=$(git remote | head -n 1)
   local remote_trunk_branch
-  if git rev-parse --verify --quiet "${primary_remote}/main" > /dev/null; then
+  # The user may optionally specify their desired trunk branch, by setting BASE_BRANCH
+  if [ -n "$BASE_BRANCH" ]; then
+    remote_trunk_branch="$BASE_BRANCH"
+  elif git rev-parse --verify --quiet "${primary_remote}/main" > /dev/null; then
     remote_trunk_branch="${primary_remote}/main"
   elif git rev-parse --verify --quiet "${primary_remote}/master" > /dev/null; then
     remote_trunk_branch="${primary_remote}/master"
