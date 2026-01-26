@@ -244,18 +244,10 @@ find_git_ahead_behind() {
 
       git_rebased_count=$(git rev-list --cherry "HEAD...${upstream_branch}" 2> /dev/null | grep -c '^=')
       if [[ "$git_rebased_count" -gt 0 ]]; then
-        #git_rebased_count="-$git_rebased_count"
-        # Instead of displaying the subtraction as above, we will do the subtraction
+        # Update git_ahead_count so we don't count the same commit twice
         git_ahead_count=$((git_ahead_count - git_rebased_count))
-        # We don't subtract from behind count because we're only displaying it next to ahead count
-        #git_behind_count=$((git_behind_count - git_rebased_count))
-        #git_rebased_count="(+$git_rebased_count)"
+        # Add marker inline (I could not be bothered to create git_rebased_mark)
         git_rebased_count="~${git_rebased_count}"
-        # If some values are now 0, we may want to hide them
-        if [[ "$git_ahead_count" == 0 ]]; then
-          git_ahead_mark=''
-          git_ahead_count=''
-        fi
       else
         git_rebased_count=''
       fi
@@ -263,16 +255,24 @@ find_git_ahead_behind() {
       if [[ -n "$remote_trunk_branch" ]]; then
         git_upstream_behind_main_count=$(git rev-list --count "${upstream_branch}..${remote_trunk_branch}" 2> /dev/null)
         if [[ "$git_upstream_behind_main_count" -gt 0 ]]; then
-          # Number of cCommits from main which are in HEAD but not yet pushed to upstream
+          # Number of commits from main which are in HEAD but not yet pushed to upstream
           # AKA git_commits_from_main_to_push_count
           git_ahead_from_main_count=$((git_upstream_behind_main_count - git_behind_main_count))
           if [[ "$git_ahead_from_main_count" -gt 0 ]]; then
+            # Update git_ahead_count so we don't count the same commit twice
             git_ahead_count=$((git_ahead_count - git_ahead_from_main_count))
+            # Add marker inline (I could not be bothered to create git_ahead_from_main_mark)
             git_ahead_from_main_count="^${git_ahead_from_main_count}"
           else
             git_ahead_from_main_count=''
           fi
         fi
+      fi
+
+      # If this count is now 0, there is no point showing it
+      if [[ "$git_ahead_count" == 0 ]]; then
+        git_ahead_mark=''
+        git_ahead_count=''
       fi
     fi
   fi
