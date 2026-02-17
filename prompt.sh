@@ -272,7 +272,8 @@ find_git_ahead_behind() {
       fi
 
       # If this count is now 0, there is no point showing it
-      if [[ "$git_ahead_count" == 0 ]]; then
+      # In rare circumstances it can go below 0 (if upstream commits have been rebased and those rebased commits are also on trunk branch)
+      if [[ "$git_ahead_count" -lt 1 ]]; then
         git_ahead_mark=''
         git_ahead_count=''
       fi
