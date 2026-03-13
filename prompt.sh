@@ -1,6 +1,5 @@
 # Other things we could count:
 # - Number of conflicts
-# - Whether we are on a merge or a rebase?
 
 find_git_branch() {
   # Based on: http://stackoverflow.com/a/13003854/170413
@@ -171,6 +170,7 @@ find_git_dirty() {
 }
 
 find_git_ahead_behind() {
+  # The output of this function is the following variables:
   git_behind_main_count=''
   git_behind_main_mark=''
   git_ahead_count=''
@@ -189,6 +189,9 @@ find_git_ahead_behind() {
   fi
 
   local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+  if [[ -z "$local_branch" ]]; then
+    return
+  fi
   local primary_remote=$(git remote | head -n 1)
   local remote_trunk_branch
   if git rev-parse --verify --quiet "${primary_remote}/main" > /dev/null; then
@@ -199,6 +202,7 @@ find_git_ahead_behind() {
     # Could not find main branch
     :
   fi
+
   if [[ "$local_branch" == "main" || "$local_branch" == "master" ]]; then
     # No need to generate behind main vars
     :
@@ -211,22 +215,28 @@ find_git_ahead_behind() {
     fi
   fi
 
-  if [[ -z "$git_branch" ]]; then
-    return
-  fi
-  local local_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
-  if [[ -n "$local_branch" ]] && [[ "$local_branch" != "HEAD" ]]; then
+  if [[ "$local_branch" != "HEAD" ]]; then
     local upstream_branch=$(git rev-parse --abbrev-ref "@{upstream}" 2> /dev/null)
     # If we get back what we put in, then that means the upstream branch was not found.  (This was observed on git 1.7.10.4 on Ubuntu)
     [[ "$upstream_branch" = "@{upstream}" ]] && upstream_branch=''
     # If the branch is not tracking a specific remote branch, then assume we are tracking origin/[this_branch_name]
     [[ -z "$upstream_branch" ]] && upstream_branch="origin/$local_branch"
     if [[ -n "$upstream_branch" ]]; then
-      # These always return a number
-      #git_ahead_count=$(git rev-list --left-right ${local_branch}...${upstream_branch} 2> /dev/null | grep -c '^<')
-      #git_behind_count=$(git rev-list --left-right ${local_branch}...${upstream_branch} 2> /dev/null | grep -c '^>')
+      # If there is no upstream, then we compare against the trunk, so we can see that we have un-pushed commits
+      # (This might not be so helpful if we have branched off another local or remote branch, in which case we might want the commits since then)
+      local base_branch_for_ahead_count="$upstream_branch"
+      # If the remote branch does not exist, then track master instead
+      if [[ $(git rev-parse "$base_branch_for_ahead_count" 2> /dev/null) = "$base_branch_for_ahead_count" ]]; then
+        base_branch_for_ahead_count="$remote_trunk_branch"
+      fi
+      # CONSIDER alternative: Count how many commits on $local_branch aren't anywhere on the remote
+      #git_ahead_count=$(git rev-list --count "$local_branch" --not $(git for-each-ref --format='%(refname)' refs/remotes)
+      # CONSIDER alternative: Or indeed, how many commits on $local_branch are on NO OTHER local or remote branch
+      #                       In other words, count unique commits
+      #                       Perhaps mark them with '^' instead of '>' ?
+      #
       # If the upstream does not exist, these will return ""
-      git_ahead_count=$(git rev-list --count "${upstream_branch}..${local_branch}" 2> /dev/null)
+      git_ahead_count=$(git rev-list --count "${base_branch_for_ahead_count}..${local_branch}" 2> /dev/null)
       git_behind_count=$(git rev-list --count "${local_branch}..${upstream_branch}" 2> /dev/null)
       if [[ "$git_ahead_count" -gt 0 ]]; then
         git_ahead_mark='>'
