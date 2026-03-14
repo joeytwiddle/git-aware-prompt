@@ -222,21 +222,20 @@ find_git_ahead_behind() {
     # If the branch is not tracking a specific remote branch, then assume we are tracking origin/[this_branch_name]
     [[ -z "$upstream_branch" ]] && upstream_branch="origin/$local_branch"
     if [[ -n "$upstream_branch" ]]; then
-      # If there is no upstream, then we compare against the trunk, so we can see that we have un-pushed commits
-      # (This might not be so helpful if we have branched off another local or remote branch, in which case we might want the commits since then)
-      local base_branch_for_ahead_count="$upstream_branch"
-      # If the remote branch does not exist, then track master instead
-      if [[ $(git rev-parse "$base_branch_for_ahead_count" 2> /dev/null) = "$base_branch_for_ahead_count" ]]; then
-        base_branch_for_ahead_count="$remote_trunk_branch"
+      # Check if the upstream exists or not
+      if git rev-parse "$upstream_branch" > /dev/null 2>&1 || [[ -n "$ZSH_NAME" ]]; then
+        # TODO BUG: Currently, we always take this branch for zsh, because of the bug noted below
+        # Upstream branch exists, so we will count how many commits from the current branch are not on the upstream
+        git_ahead_count=$(git rev-list --count "${upstream_branch}..${local_branch}" 2> /dev/null)
+      else
+        # No upstream exists, so we will count instead how many commits from the current branch exist in no other branches (remote or local)
+        local other_branches=$(
+          git for-each-ref --format='%(refname)' refs/remotes
+          git for-each-ref --format='%(refname:short)' refs/heads | grep -v -xF "$(git rev-parse --abbrev-ref HEAD)"
+        )
+        # TODO BUG: Fails in zsh (5.9 on macOS) on busier repos. It appears to treat $other_branches as a single argument, resulting in the error "File name too long" or sometimes "unknown revision or path not in the working tree"
+        git_ahead_count=$(git rev-list --count "$local_branch" --not $other_branches)
       fi
-      # CONSIDER alternative: Count how many commits on $local_branch aren't anywhere on the remote
-      #git_ahead_count=$(git rev-list --count "$local_branch" --not $(git for-each-ref --format='%(refname)' refs/remotes)
-      # CONSIDER alternative: Or indeed, how many commits on $local_branch are on NO OTHER local or remote branch
-      #                       In other words, count unique commits
-      #                       Perhaps mark them with '^' instead of '>' ?
-      #
-      # If the upstream does not exist, these will return ""
-      git_ahead_count=$(git rev-list --count "${base_branch_for_ahead_count}..${local_branch}" 2> /dev/null)
       git_behind_count=$(git rev-list --count "${local_branch}..${upstream_branch}" 2> /dev/null)
       if [[ "$git_ahead_count" -gt 0 ]]; then
         git_ahead_mark='>'
