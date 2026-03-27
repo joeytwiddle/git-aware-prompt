@@ -257,12 +257,6 @@ find_git_ahead_behind() {
         #git_behind_count=$((git_behind_count - git_rebased_count))
         #git_rebased_count="(+$git_rebased_count)"
         git_rebased_count="~${git_rebased_count}"
-        # If some values are now 0, we may want to hide them
-        # (In rare circumstances it can go below 0, e.g. if upstream commits have been rebased and those rebased commits are also on trunk branch)
-        if [[ "$git_ahead_count" -lt 1 ]]; then
-          git_ahead_mark=''
-          git_ahead_count=''
-        fi
       else
         git_rebased_count=''
       fi
@@ -280,6 +274,13 @@ find_git_ahead_behind() {
             git_ahead_from_main_count=''
           fi
         fi
+      fi
+
+      # After the adjustments above, if some values are now 0, we may want to hide them
+      # (In rare circumstances it can go below 0, e.g. if upstream commits have been rebased and those rebased commits are also on trunk branch)
+      if [[ "$git_ahead_count" -lt 1 ]]; then
+        git_ahead_mark=''
+        git_ahead_count=''
       fi
     fi
   fi
