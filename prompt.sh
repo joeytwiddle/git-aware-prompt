@@ -4,7 +4,6 @@
 find_git_branch() {
   # Based on: http://stackoverflow.com/a/13003854/170413
   local branch
-  local upstream
   local is_branch
   local git_dir
   local special_state
@@ -32,7 +31,6 @@ find_git_branch() {
     else
       # This is a named branch
       is_branch=true
-      upstream=$(git rev-parse '@{upstream}' 2> /dev/null)
     fi
     git_dir="$(git rev-parse --show-toplevel)/.git"
     if [[ -d "$git_dir/rebase-merge" ]] || [[ -d "$git_dir/rebase-apply" ]]; then
@@ -48,7 +46,8 @@ find_git_branch() {
     fi
     if [[ -n "$special_state" ]]; then
       git_branch=" {$branch\\$special_state}"
-    elif [[ -n "$is_branch" && -n "$upstream" ]]; then
+    # This will require the upstream to be set but also require the upstream branch to exist
+    elif [[ -n "$is_branch" ]] && git rev-parse --abbrev-ref "@{upstream}" > /dev/null 2>&1; then
       git_branch=" [$branch]"     # Branch has an upstream
     elif [[ -n "$is_branch" ]]; then
       git_branch=" ($branch)"     # Branch has no upstream
