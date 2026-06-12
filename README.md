@@ -38,13 +38,7 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 
 ![Git Branch in Prompt](https://github.com/joeytwiddle/git-aware-prompt/raw/master/preview.png)
 
-> `v5` indicates that the current branch is 5 commits behind the remote main branch.
->
-> `^4` indicates that the local branch has 4 commits to push, which have come from the remote main branch.
->
-> `~3` indicates that 3 of the commits on the local branch are actually rebases (repicks) of commits on the upstream branch.
->
-> `>4` indicates that the local branch has 3 commits which have not yet been pushed to the upstream (excluding the following rebases).
+> `>2` indicates that the local branch has 2 commits which have not yet been pushed to the upstream (excluding the following rebases).
 >
 > `<3` indicates that the local branch is 3 commits behind the upstream (remote) branch, and could/should be pulled (excludes rebases).
 >
@@ -58,9 +52,13 @@ The initial implementation of the timeout feature is on [this commit](https://gi
 >
 > `≡` is a reminder that we have something on the stash.
 >
-> `#` would indicate that `git status` has taken too long, so the markers are not shown.
+> `v5` indicates that the current branch is 5 commits behind the remote main branch.
 >
->  In that situation, `git status` will continue running in the background, so after a few moments, hitting `<Enter>` again should give you an up-to-date summary.
+> `^4` indicates that the local branch has 4 commits to push, which have come from the remote main branch.
+>
+> `~3` indicates that 3 of the commits on the local branch are actually rebases (repicks) of commits on the upstream branch.
+>
+> `#` indicates that `git status` has taken too long, so it has aborted, and no markers will be shown.  In that situation, `git status` will continue running in the background, so after a few moments, hitting `<Enter>` again should give you an up-to-date summary.
 
 We also have some indicators for the status of the current branch:
 
@@ -70,26 +68,9 @@ We also have some indicators for the status of the current branch:
 >
 > `{branch_name\mode}` means you are in the middle of a merge, rebase, cherry-pick, revert or bisect
 >
-> `<commit_id>` means you are not on a branch, but rather detached on the given commit, tag, or remote branch
+> `<commit_id>` means you are not on a local branch, but rather detached on the given commit, tag, or remote branch
 
 The symbols (or "markers") can be changed by editing the `prompt.sh` file directly (and reloading it of course).  The numbers or the markers can be omitted by removing the `_count` or `_mark` variables from the `PS1` prompt below.
-
-
-## See Also
-
-- The [original git-aware-prompt](https://github.com/jimeh/git-aware-prompt) by jimeh, from which this version is forked
-
-- The [prompt now distributed with git](https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh) offers a `GIT_PS1_SHOWUPSTREAM` option.
-
-- Zsh now ships with [vcs_info](https://git-scm.com/book/tr/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Zsh) which works for a variety of version control systems.  (Unfortunately the docs for this are a big gnarly.)
-
-- [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh) has its own [git-prompt](https://github.com/robbyrussell/oh-my-zsh/blob/master/plugins/gitfast/git-prompt.sh).  (It has 500 lines compared to our 200.)
-
-- Inspiration for this fork came from [git-branch-status](https://gist.github.com/jehiah/1288596) by jehiah (a command, not a prompt)
-
-- [pure](https://github.com/sindresorhus/pure) prompt by sindresorhus includes good git support (for zsh only)
-
-- [liquidprompt](https://github.com/nojhan/liquidprompt) includes some git support (for bash and zsh)
 
 
 ## Installation
@@ -181,6 +162,23 @@ git pull
 To view other user's tips, please check the
 [Usage Tips](https://github.com/jimeh/git-aware-prompt/wiki/Usage-Tips) wiki
 page. Or if you have tips of your own, feel free to add them :)
+
+
+## See Also
+
+- The [original git-aware-prompt](https://github.com/jimeh/git-aware-prompt) by jimeh, from which this version is forked
+
+- The [prompt now distributed with git](https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh) offers a `GIT_PS1_SHOWUPSTREAM` option.
+
+- Zsh now ships with [vcs_info](https://git-scm.com/book/tr/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Zsh) which works for a variety of version control systems.  (Unfortunately the docs for this are a big gnarly.)
+
+- [Oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh) has its own [git-prompt](https://github.com/robbyrussell/oh-my-zsh/blob/master/plugins/gitfast/git-prompt.sh).  (It has 500 lines compared to our 200.)
+
+- Inspiration for this fork came from [git-branch-status](https://gist.github.com/jehiah/1288596) by jehiah (a command, not a prompt)
+
+- [pure](https://github.com/sindresorhus/pure) prompt by sindresorhus includes good git support (for zsh only)
+
+- [liquidprompt](https://github.com/nojhan/liquidprompt) includes some git support (for bash and zsh)
 
 
 ## License
